@@ -1,0 +1,7 @@
+settings:
+  language: "zh" # Options: "zh", "en", "both"
+  llm:
+    provider: "gemini"
+    model: "gemini-1.5-flash"
+  data_lifecycle:
+    retention_days: 90

@@ -1,0 +1,68 @@
+name: Generate Xiaohongshu Posters
+
+on:
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Install Chromium (required for html2image)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+          
+      - name: Run poster generation script
+        run: |
+          cat << 'EOF' > run_poster.py
+          import sys
+          import os
+          import json
+          sys.path.append('src')
+          from publisher.poster_maker import generate_posters
+          from main import load_config
+          
+          settings = load_config('config/settings.yaml')['settings']
+          lang = settings.get('language', 'zh')
+          data_dir = f"data/{lang}"
+          
+          items = []
+          if os.path.exists(data_dir):
+              for filename in sorted(os.listdir(data_dir), reverse=True):
+                  if filename.endswith('.json'):
+                      with open(os.path.join(data_dir, filename), 'r') as f:
+                          try:
+                              items.extend(json.load(f))
+                              if len(items) >= 4:
+                                  break
+                          except:
+                              pass
+          
+          if not items:
+              print("No items to generate posters for.")
+          else:
+              generate_posters(items)
+          EOF
+          python run_poster.py
+          
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add posters/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "feat: Generate new posters" && git push)

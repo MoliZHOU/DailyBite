@@ -1,0 +1,8 @@
+requests
+beautifulsoup4
+google-generativeai
+pyyaml
+feedgen
+jinja2
+html2image
+pillow
