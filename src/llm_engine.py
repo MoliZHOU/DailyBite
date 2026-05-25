@@ -1,19 +1,17 @@
 import os
-import google.generativeai as genai
+from google import genai
 
 def init_gemini():
     api_key = os.environ.get('GEMINI_API_KEY')
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable is missing!")
-    genai.configure(api_key=api_key)
+    return genai.Client(api_key=api_key)
 
 def summarize_items(items, language='zh'):
     if not items:
         return []
     
-    init_gemini()
-    # You can change to gemini-1.5-pro if needed for better quality
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    client = init_gemini()
     
     summaries = []
     for item in items:
@@ -39,7 +37,10 @@ Make the tone enthusiastic, professional yet highly readable and accessible.
 """
         
         try:
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt
+            )
             # Store the generated summary back into the item dict
             summarized_item = item.copy()
             summarized_item['summary'] = response.text.strip()

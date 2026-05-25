@@ -1,6 +1,6 @@
 requests
 beautifulsoup4
-google-generativeai
+google-genai
 pyyaml
 feedgen
 jinja2
