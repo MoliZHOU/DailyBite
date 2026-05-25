@@ -1,6 +1,7 @@
 from feedgen.feed import FeedGenerator
 import os
-from datetime import datetime, timezone
+from datetime import datetime
+import pytz
 
 def generate_rss(items, output_file='feed.xml', language='zh'):
     fg = FeedGenerator()
@@ -30,9 +31,9 @@ def generate_rss(items, output_file='feed.xml', language='zh'):
         if timestamp:
             dt = datetime.fromisoformat(timestamp)
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=pytz.UTC)
         else:
-            dt = datetime.now(timezone.utc)
+            dt = datetime.now(pytz.UTC)
             
         fe.pubDate(dt)
         

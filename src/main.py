@@ -25,7 +25,8 @@ def main():
     
     if sources.get('github_trending', {}).get('enabled'):
         print("Fetching GitHub Trending...")
-        repos = fetch_trending_repos()
+        limit = sources['github_trending'].get('limit', 10)
+        repos = fetch_trending_repos()[:limit]
         all_new_items.extend(repos)
     
     # Deduplicate

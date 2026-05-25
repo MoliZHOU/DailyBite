@@ -4,5 +4,6 @@ google-genai
 pyyaml
 feedgen
 jinja2
+pytz
 html2image
 pillow

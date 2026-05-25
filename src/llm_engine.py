@@ -15,6 +15,8 @@ def summarize_items(items, language='zh'):
     client = init_gemini()
     
     summaries = []
+    current_model = 'gemini-2.5-flash'
+    
     for item in items:
         lang_prompt = "Please write the output ENTIRELY in Chinese (Simplified)." if language == 'zh' else "Please write the output ENTIRELY in English."
         
@@ -37,22 +39,26 @@ Focus on:
 Make the tone enthusiastic, professional yet highly readable and accessible.
 """
         
-        max_retries = 3
+        max_retries = 2
         for attempt in range(max_retries):
             try:
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model=current_model,
                     contents=prompt
                 )
                 summarized_item = item.copy()
                 summarized_item['summary'] = response.text.strip()
                 summaries.append(summarized_item)
-                print(f"Successfully summarized: {item['title']}")
-                time.sleep(15)  # 避免触发免费层频率限制
+                print(f"Successfully summarized ({current_model}): {item['title']}")
+                time.sleep(15)  # 避免触发 15 RPM 限制
                 break
             except Exception as e:
-                if '429' in str(e):
-                    print(f"Rate limited (429) for {item['title']}. Sleeping for 30s before retry {attempt+1}/{max_retries}...")
+                if '429' in str(e) and 'Quota exceeded' in str(e) and current_model == 'gemini-2.5-flash':
+                    print(f"2.5-flash Quota Exceeded (429)! Fallback to gemini-1.5-flash...")
+                    current_model = 'gemini-1.5-flash'
+                    # 立即用 1.5 重试
+                elif '429' in str(e):
+                    print(f"Rate limited (429). Sleeping for 30s before retry {attempt+1}/{max_retries}...")
                     time.sleep(30)
                 else:
                     print(f"Error summarizing {item['title']}: {e}")

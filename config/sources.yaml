@@ -2,3 +2,4 @@ sources:
   github_trending:
     enabled: true
     url: "https://github.com/trending"
+    limit: 10
