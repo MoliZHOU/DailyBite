@@ -1,4 +1,5 @@
 import os
+import time
 from google import genai
 
 def init_gemini():
@@ -36,17 +37,25 @@ Focus on:
 Make the tone enthusiastic, professional yet highly readable and accessible.
 """
         
-        try:
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt
-            )
-            # Store the generated summary back into the item dict
-            summarized_item = item.copy()
-            summarized_item['summary'] = response.text.strip()
-            summaries.append(summarized_item)
-            print(f"Successfully summarized: {item['title']}")
-        except Exception as e:
-            print(f"Error summarizing {item['title']}: {e}")
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=prompt
+                )
+                summarized_item = item.copy()
+                summarized_item['summary'] = response.text.strip()
+                summaries.append(summarized_item)
+                print(f"Successfully summarized: {item['title']}")
+                time.sleep(15)  # 避免触发免费层频率限制
+                break
+            except Exception as e:
+                if '429' in str(e):
+                    print(f"Rate limited (429) for {item['title']}. Sleeping for 30s before retry {attempt+1}/{max_retries}...")
+                    time.sleep(30)
+                else:
+                    print(f"Error summarizing {item['title']}: {e}")
+                    break
             
     return summaries

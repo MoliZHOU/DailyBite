@@ -29,6 +29,8 @@ def generate_rss(items, output_file='feed.xml', language='zh'):
         timestamp = item.get('timestamp')
         if timestamp:
             dt = datetime.fromisoformat(timestamp)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
         else:
             dt = datetime.now(timezone.utc)
             
