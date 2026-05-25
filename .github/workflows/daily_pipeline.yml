@@ -37,7 +37,8 @@ jobs:
       - name: Cleanup old data (>90 days)
         run: |
           # Cleanup json data and any generated images older than 90 days
-          find data -type f -name "*.json" -mtime +90 -exec rm -f {} \;
+          mkdir -p data posters
+          find data -type f -name "*.json" -mtime +90 -exec rm -f {} \; || true
           find posters -type f -name "*.png" -mtime +90 -exec rm -f {} \; || true
           
       - name: Commit and push changes
